@@ -13,4 +13,6 @@
     <string name="test_rssi_signal">-45 dBm</string>
     <string name="test_name_device">Name Device</string>
     <string name="location_permission_message">Для поиска устройств приложению необходим доступ к местоположению устройства.</string>
+    <string name="sort_by_signal_text">Сортировать по сигналу</string>
+    <string name="settings_text">Настройки</string>
 </resources>

@@ -14,4 +14,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }
+
+    fun getSettingsStore(): SettingsStore = (application as ControlRelayApp).getSettingsStore()
+
 }

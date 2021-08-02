@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +22,8 @@ class DevicesFragment : Fragment() {
     private val viewModel: DevicesViewModel by viewModels()
     private val adapter = DeviceAdapter()
 
+    private var settingsStore: SettingsStore? = null
+
     private val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -29,6 +32,11 @@ class DevicesFragment : Fragment() {
         } else {
             toast(getString(R.string.location_permission_message))
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setFragmentResultListener(SettingsDialog.KEY_RESULT_SORT_DEVICES, onSettingsListener)
     }
 
     override fun onCreateView(
@@ -42,6 +50,7 @@ class DevicesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbar()
         setupRecyclerDevices()
         setupSubscribeToViewModel()
     }
@@ -53,12 +62,16 @@ class DevicesFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        settingsStore = (requireActivity() as MainActivity).getSettingsStore()
+        settingsStore?.let {
+            viewModel.enableSortBySignal(it.loadEnableSortDevices())
+        }
         scanDevices(true)
-        viewModel.enableSortBySignal(true)
     }
 
     override fun onStop() {
         super.onStop()
+        settingsStore = null
         scanDevices(false)
     }
 
@@ -72,19 +85,38 @@ class DevicesFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerDevices() {
-        with(binding) {
-            recyclerDevices.setHasFixedSize(true)
-            recyclerDevices.layoutManager = LinearLayoutManager(requireContext())
-            val divider = DividerItemDecoration(requireContext(), RecyclerView.VERTICAL)
-            recyclerDevices.addItemDecoration(divider)
-            recyclerDevices.adapter = adapter
+    private fun setupToolbar() = with(binding) {
+        toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_settings -> showSettings()
+            }
+            false
         }
+    }
+
+    private fun showSettings() {
+        val sortEnable = settingsStore?.loadEnableSortDevices() ?: false
+        val dialog = SettingsDialog.newInstance(sortEnable)
+        dialog.show(parentFragmentManager, "settings_dialog")
+    }
+
+    private val onSettingsListener: ((String, Bundle) -> Unit) = { _, bundle ->
+        settingsStore?.saveEnableSortDevices(
+            bundle.getBoolean(SettingsDialog.KEY_RESULT_SORT_DEVICES)
+        )
+    }
+
+    private fun setupRecyclerDevices() = with(binding) {
+        recyclerDevices.setHasFixedSize(true)
+        recyclerDevices.layoutManager = LinearLayoutManager(requireContext())
+        val divider = DividerItemDecoration(requireContext(), RecyclerView.VERTICAL)
+        recyclerDevices.addItemDecoration(divider)
+        recyclerDevices.adapter = adapter
     }
 
     private fun setupSubscribeToViewModel() {
         viewModel.deviceResults.observe(viewLifecycleOwner, { results ->
-            when(results) {
+            when (results) {
                 is DeviceScanResult.Success -> updateListDevices(results.devices)
                 is DeviceScanResult.Error -> toast(results.message)
             }

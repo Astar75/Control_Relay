@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.*
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -66,6 +67,7 @@ class DevicesViewModel : ViewModel() {
     }
 
     fun enableSortBySignal(enable: Boolean) {
+        Log.e(TAG, "Set enable sort $enable")
         isSortBySignal = enable
     }
 
@@ -74,6 +76,8 @@ class DevicesViewModel : ViewModel() {
             val devices = sortDevices(scanDevices.values.toList())
             _deviceResults.postValue(DeviceScanResult.Success(devices))
             handlerPostResult.postDelayed(this, UPDATE_POST_RESULT)
+
+            Log.e(TAG, "Enable sorting $isSortBySignal")
         }
     }
 
@@ -87,7 +91,7 @@ class DevicesViewModel : ViewModel() {
 
     private fun sortDevices(devices: List<Device>): List<Device> {
         val filterResults = ArrayList<Device>(devices)
-        return if (isSortBySignal) filterResults.sortedBy { it.rssi }
+        return if (isSortBySignal) filterResults.sortedByDescending { it.rssi }
         else filterResults
     }
 
