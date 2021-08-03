@@ -15,4 +15,6 @@
     <string name="location_permission_message">Для поиска устройств приложению необходим доступ к местоположению устройства.</string>
     <string name="sort_by_signal_text">Сортировать по сигналу</string>
     <string name="settings_text">Настройки</string>
+    <string name="settings_title">Настройки</string>
+    <string name="ok_button">Ok</string>
 </resources>

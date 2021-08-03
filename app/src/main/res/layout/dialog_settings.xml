@@ -5,10 +5,27 @@
     android:orientation="vertical"
     android:padding="@dimen/margin_normal">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_title"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switchSortDevices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_normal"
         android:text="@string/sort_by_signal_text" />
+
+    <Button
+        android:id="@+id/okButton"
+        android:layout_marginTop="@dimen/margin_min"
+        android:layout_gravity="end"
+        android:textColor="@color/purple_500"
+        android:background="@android:color/transparent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ok_button" />
 
 </LinearLayout>

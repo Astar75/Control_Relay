@@ -22,8 +22,6 @@ class DevicesFragment : Fragment() {
     private val viewModel: DevicesViewModel by viewModels()
     private val adapter = DeviceAdapter()
 
-    private var settingsStore: SettingsStore? = null
-
     private val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -36,7 +34,7 @@ class DevicesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFragmentResultListener(SettingsDialog.KEY_RESULT_SORT_DEVICES, onSettingsListener)
+        setFragmentResultListener(MySettingsDialog.KEY_SCAN_SETTINGS, onSettingsListener)
     }
 
     override fun onCreateView(
@@ -62,17 +60,32 @@ class DevicesFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        settingsStore = (requireActivity() as MainActivity).getSettingsStore()
-        settingsStore?.let {
-            viewModel.enableSortBySignal(it.loadEnableSortDevices())
-        }
+        setSortMode()
         scanDevices(true)
     }
 
     override fun onStop() {
         super.onStop()
-        settingsStore = null
         scanDevices(false)
+    }
+
+    private fun setSortMode() {
+        viewModel.enableSortBySignal(
+            (requireActivity() as MainActivity)
+                .getSettingsStore()
+                .loadEnableSortDevices()
+        )
+    }
+
+    private fun getSortMode() =
+        (requireActivity() as MainActivity)
+            .getSettingsStore()
+            .loadEnableSortDevices()
+
+    private fun saveSortingMode(sorting: Boolean) {
+        (requireActivity() as MainActivity)
+            .getSettingsStore()
+            .saveEnableSortDevices(sorting)
     }
 
     private fun scanDevices(enable: Boolean) {
@@ -95,15 +108,14 @@ class DevicesFragment : Fragment() {
     }
 
     private fun showSettings() {
-        val sortEnable = settingsStore?.loadEnableSortDevices() ?: false
-        val dialog = SettingsDialog.newInstance(sortEnable)
+        val dialog = MySettingsDialog.newInstance(getSortMode())
         dialog.show(parentFragmentManager, "settings_dialog")
     }
 
     private val onSettingsListener: ((String, Bundle) -> Unit) = { _, bundle ->
-        settingsStore?.saveEnableSortDevices(
-            bundle.getBoolean(SettingsDialog.KEY_RESULT_SORT_DEVICES)
-        )
+        val sorting = bundle.getBoolean(MySettingsDialog.KEY_SORTING)
+        viewModel.enableSortBySignal(sorting)
+        saveSortingMode(sorting)
     }
 
     private fun setupRecyclerDevices() = with(binding) {
