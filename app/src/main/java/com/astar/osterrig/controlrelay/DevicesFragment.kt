@@ -9,18 +9,20 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.astar.osterrig.controlrelay.databinding.FragmentDevicesBinding
 
-class DevicesFragment : Fragment() {
+class DevicesFragment : Fragment(), DeviceAdapter.Action {
 
     private var _binding: FragmentDevicesBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: DevicesViewModel by viewModels()
-    private val adapter = DeviceAdapter()
+
+    private val adapter = DeviceAdapter(this)
 
     private val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -34,7 +36,7 @@ class DevicesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFragmentResultListener(MySettingsDialog.KEY_SCAN_SETTINGS, onSettingsListener)
+        setFragmentResultListener(SettingsDialog.KEY_CODE_SETTINGS, onSettingsListener)
     }
 
     override fun onCreateView(
@@ -108,14 +110,28 @@ class DevicesFragment : Fragment() {
     }
 
     private fun showSettings() {
-        val dialog = MySettingsDialog.newInstance(getSortMode())
+        val dialog = SettingsDialog.newInstance(getSortMode())
         dialog.show(parentFragmentManager, "settings_dialog")
     }
 
     private val onSettingsListener: ((String, Bundle) -> Unit) = { _, bundle ->
-        val sorting = bundle.getBoolean(MySettingsDialog.KEY_SORTING)
-        viewModel.enableSortBySignal(sorting)
-        saveSortingMode(sorting)
+        if (bundle.containsKey(SettingsDialog.KEY_CLEAR_PASSWORDS)) {
+            val isClearPasswords = bundle.getBoolean(SettingsDialog.KEY_CLEAR_PASSWORDS)
+            if (isClearPasswords) {
+                clearPasswords()
+            }
+        }
+        if (bundle.containsKey(SettingsDialog.KEY_SORTING)) {
+            val sorting = bundle.getBoolean(SettingsDialog.KEY_SORTING)
+            viewModel.enableSortBySignal(sorting)
+            saveSortingMode(sorting)
+        }
+    }
+
+    private fun clearPasswords() {
+        (requireActivity() as MainActivity)
+            .getSettingsStore()
+            .removeAllPasswords()
     }
 
     private fun setupRecyclerDevices() = with(binding) {
@@ -124,6 +140,12 @@ class DevicesFragment : Fragment() {
         val divider = DividerItemDecoration(requireContext(), RecyclerView.VERTICAL)
         recyclerDevices.addItemDecoration(divider)
         recyclerDevices.adapter = adapter
+    }
+
+    override fun onControl(device: Device) {
+        findNavController().navigate(
+            DevicesFragmentDirections.actionDevicesFragmentToControlFragment(device)
+        )
     }
 
     private fun setupSubscribeToViewModel() {

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.*
 import android.os.Handler
+import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -34,8 +35,7 @@ class DevicesViewModel : ViewModel() {
     }
 
     private fun buildScanFilters(): List<ScanFilter> {
-        //todo add uuid for filter
-        return listOf(ScanFilter.Builder().build())
+        return listOf(ScanFilter.Builder().setServiceUuid(SCAN_FILTER_UUID).build())
     }
 
     private fun buildScanSettings() =
@@ -50,7 +50,7 @@ class DevicesViewModel : ViewModel() {
         if (scanCallback == null) {
             scanner = adapter.bluetoothLeScanner
             scanCallback = DeviceScanCallback()
-            scanner?.startScan(scanCallback)
+            scanner?.startScan(filter, settings, scanCallback)
             startPostResultTimer()
         } else {
             _deviceResults.postValue(DeviceScanResult.Error("Сканирование уже запущено!"))
@@ -60,6 +60,7 @@ class DevicesViewModel : ViewModel() {
     fun stopScan() {
         if (scanCallback != null) {
             scanner?.stopScan(scanCallback)
+            //scanDevices.clear()
             stopPostResultTimer()
             scanCallback = null
             scanner = null
@@ -67,7 +68,6 @@ class DevicesViewModel : ViewModel() {
     }
 
     fun enableSortBySignal(enable: Boolean) {
-        Log.e(TAG, "Set enable sort $enable")
         isSortBySignal = enable
     }
 
@@ -76,8 +76,6 @@ class DevicesViewModel : ViewModel() {
             val devices = sortDevices(scanDevices.values.toList())
             _deviceResults.postValue(DeviceScanResult.Success(devices))
             handlerPostResult.postDelayed(this, UPDATE_POST_RESULT)
-
-            Log.e(TAG, "Enable sorting $isSortBySignal")
         }
     }
 
@@ -121,6 +119,7 @@ class DevicesViewModel : ViewModel() {
 
     private companion object {
         private val TAG = DevicesViewModel::class.simpleName
+        private val SCAN_FILTER_UUID = ParcelUuid.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b")
         private const val UPDATE_POST_RESULT = 1000L
     }
 }

@@ -7,8 +7,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import eo.view.signalstrength.SignalStrengthView
 
-class DeviceAdapter : RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder>() {
+class DeviceAdapter(
+    private val action: Action
+) : RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder>() {
 
     private val diff = DevicesDiffUtil()
     private val items = ArrayList<Device>()
@@ -49,20 +52,27 @@ class DeviceAdapter : RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder>() {
 
     override fun getItemCount() = items.size
 
+    interface Action {
+        fun onControl(device: Device)
+    }
+
     inner class DeviceViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val textName: TextView = view.findViewById(R.id.textName)
         private val textAddress: TextView = view.findViewById(R.id.textAddress)
         private val textSignal: TextView = view.findViewById(R.id.textSignal)
+        private val viewSignal: SignalStrengthView = view.findViewById(R.id.signalView)
 
         fun bind(item: Device) {
-            textName.text = item.device.name ?: "Unnamed"
+            itemView.setOnClickListener { action.onControl(item) }
+            textName.text = item.device.name ?: itemView.context.getString(R.string.unnamed)
             textAddress.text = item.device.address
-            textSignal.text = item.rssi.toString()
+            textSignal.text = textSignal.context.getString(R.string.signal, item.rssi)
+            viewSignal.signalLevel = item.rssi + 100
         }
 
         fun updateRssi(rssi: Int) {
-            textSignal.text = rssi.toString()
+            textSignal.text = textSignal.context.getString(R.string.signal, rssi)
+            viewSignal.signalLevel = rssi + 100
         }
     }
-
 }

@@ -18,6 +18,12 @@
         android:layout_marginTop="@dimen/margin_normal"
         android:text="@string/sort_by_signal_text" />
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchClearPassword"
+        android:text="@string/clear_saved_passwords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/okButton"
         android:layout_marginTop="@dimen/margin_min"

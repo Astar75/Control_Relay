@@ -9,7 +9,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
 import com.astar.osterrig.controlrelay.databinding.DialogSettingsBinding
 
-class MySettingsDialog: DialogFragment() {
+class SettingsDialog : DialogFragment() {
 
     private var sorting = false
 
@@ -53,17 +53,25 @@ class MySettingsDialog: DialogFragment() {
     private fun setupViews() {
         binding.switchSortDevices.isChecked = sorting
         binding.switchSortDevices.setOnCheckedChangeListener { _, isChecked ->
-            setFragmentResult(KEY_SCAN_SETTINGS, bundleOf(KEY_SORTING to isChecked))
+            setFragmentResult(KEY_CODE_SETTINGS, bundleOf(KEY_SORTING to isChecked))
         }
-        binding.okButton.setOnClickListener { dismiss() }
+        binding.okButton.setOnClickListener {
+            val isClearPasswords = binding.switchClearPassword.isChecked
+            setFragmentResult(
+                KEY_CODE_SETTINGS,
+                bundleOf(KEY_CLEAR_PASSWORDS to isClearPasswords)
+            )
+            dismiss()
+        }
     }
 
-    companion object{
+    companion object {
 
-        const val KEY_SCAN_SETTINGS = "com.astar.osterrig.controlrelay.key_scan_settings"
-        const val KEY_SORTING = "com.astar.osterrig.controlrelay.key_sort"
+        const val KEY_CODE_SETTINGS = "settings_dialog.key_scan_settings"
+        const val KEY_SORTING = "settings_dialog.key_sort"
+        const val KEY_CLEAR_PASSWORDS = "settings_dialog.key_clear_passwords"
 
-        fun newInstance(sort: Boolean) = MySettingsDialog().apply {
+        fun newInstance(sort: Boolean) = SettingsDialog().apply {
             arguments = Bundle().apply {
                 putBoolean(KEY_SORTING, sort)
             }
