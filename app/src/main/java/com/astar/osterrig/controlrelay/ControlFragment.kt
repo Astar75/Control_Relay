@@ -31,8 +31,6 @@ class ControlFragment : Fragment() {
         setFragmentResultListener(ChangeNameDialog.REQ_CODE, onChangeNameDeviceListener)
     }
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -78,7 +76,6 @@ class ControlFragment : Fragment() {
                     openChangePasswordDialog()
                 }
             }
-
         } else {
             toast(getString(R.string.device_not_connected))
         }
@@ -194,6 +191,11 @@ class ControlFragment : Fragment() {
     private fun failedToConnect(reason: Int) = with(binding) {
         toast("Ошибка при подключении. Код $reason")
         unlockControlUi(false)
+        showTryAgain()
+    }
+
+    private fun showTryAgain() = with(binding) {
+        unlockControlUi(false)
         buttonTryAgain.isVisible = true
         buttonControlRelay.isVisible = false
         containerProgress.isVisible = false
@@ -237,7 +239,7 @@ class ControlFragment : Fragment() {
                 is RelayConnectionState.Connecting -> connectionDevice()
                 is RelayConnectionState.Connected -> connectedDevice(state.device)
                 is RelayConnectionState.Ready -> readyDevice()
-                is RelayConnectionState.Disconnected -> unlockControlUi(false)
+                is RelayConnectionState.Disconnected -> showTryAgain()
                 is RelayConnectionState.FailedToConnect -> failedToConnect(state.reason)
             }
         })

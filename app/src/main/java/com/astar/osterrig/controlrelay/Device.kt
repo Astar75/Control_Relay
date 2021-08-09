@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothDevice
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Device(val device: BluetoothDevice, val rssi: Int = 0): Parcelable {
+data class Device(
+    val device: BluetoothDevice,
+    val rssi: Int = 0): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(BluetoothDevice::class.java.classLoader)!!,
         parcel.readInt()

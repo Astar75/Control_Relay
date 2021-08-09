@@ -32,14 +32,26 @@ void setup()
   pinMode(PIN_BUTTON_FACTORY_RESET, INPUT); 
 }
 
+bool resetButtonFlag = false; 
+
 void loop()
 {
   bool buttonState = digitalRead(PIN_BUTTON_FACTORY_RESET);
+  if (buttonState && !resetButtonFlag) {
+    resetButtonFlag = true; 
+    Serial.println("Pressed..."); 
+  } 
+
+  if (!buttonState && resetButtonFlag) {
+    resetButtonFlag = false; 
+    factoryReset(); 
+  }  
+  /*bool buttonState = digitalRead(PIN_BUTTON_FACTORY_RESET);
   if (buttonState && !buttonStateFlag && millis() - buttonPressTimer > 100) {
     buttonStateFlag = true;
     buttonPressTimer = millis();
     factoryReset();
-  }
+  }*/
 }
 
 void bluetoothCallback(uint8_t command, std::string data) 
